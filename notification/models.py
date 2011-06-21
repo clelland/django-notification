@@ -36,6 +36,7 @@ class NoticeType(models.Model):
     label = models.CharField(_('label'), max_length=40)
     display = models.CharField(_('display'), max_length=50)
     description = models.CharField(_('description'), max_length=100)
+    enabled = models.BooleanField(default=True)
 
     # by default only on for media with sensitivity less than or equal to this number
     default = models.IntegerField(_('default'))
@@ -262,6 +263,10 @@ def send_now(users, label, extra_context=None, on_site=True, sender=None):
         extra_context = {}
 
     notice_type = NoticeType.objects.get(label=label)
+
+    # Quick return if notice type is disabled globally
+    if not notice_type.enabled:
+        return
 
     protocol = getattr(settings, "DEFAULT_HTTP_PROTOCOL", "http")
     current_site = Site.objects.get_current()
